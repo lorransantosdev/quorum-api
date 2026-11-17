@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.openapi.docs import get_redoc_html
 
 from app.api import rotas_clientes, rotas_despachos, rotas_equipamentos, rotas_medicoes, rotas_saude
 from app.api.erros import registrar_tratadores
@@ -22,7 +23,16 @@ TAGS = [
     {"name": "Saúde", "description": "Verificação usada pelo monitoramento."},
 ]
 
-app = FastAPI(title="Quorum · API", version="1.0.0", description=DESCRICAO, openapi_tags=TAGS)
+app = FastAPI(title="Quorum · API", version="1.0.0", description=DESCRICAO, openapi_tags=TAGS, redoc_url=None)
+
+
+@app.get("/redoc", include_in_schema=False)
+def redoc():
+    return get_redoc_html(
+        openapi_url=app.openapi_url,
+        title=f"{app.title} - ReDoc",
+        redoc_js_url="https://cdn.jsdelivr.net/npm/redoc@2.1.5/bundles/redoc.standalone.js",
+    )
 
 registrar_tratadores(app)
 

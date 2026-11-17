@@ -257,13 +257,17 @@ Saídas reais guardadas em `docs/evidencias/`:
 - [`testes.txt`](docs/evidencias/testes.txt): saída do `pytest -v` (SQLite) e da mesma suíte contra o PostgreSQL.
 - [`api.txt`](docs/evidencias/api.txt): sessão com `curl` passando por todos os endpoints, incluindo os erros 404, 409, 422 e o 503 do `/health` com o banco parado.
 
-Prints (adicionar):
+- [`testes-ubuntu.txt`](docs/evidencias/testes-ubuntu.txt): a mesma suíte rodando no servidor Linux (Ubuntu 24.04, Python 3.12) provisionado pela disciplina de Operating Systems.
 
-- `docs/evidencias/swagger.png`: tela do Swagger em `/docs`
-- `docs/evidencias/redoc.png`: tela do ReDoc em `/redoc`
-- `docs/evidencias/despacho.png`: `POST /despachos` executado pelo Swagger
+Prints:
 
-![Swagger](docs/evidencias/swagger.png)
+| | |
+|---|---|
+| Swagger UI (`/docs`) | ![Swagger](docs/evidencias/swagger.png) |
+| `POST /despachos` executado pelo Swagger (201, ATENDIDO) | ![Despacho](docs/evidencias/despacho.png) |
+| `POST /clientes/{id}/medicoes` executado pelo Swagger | ![Medição](docs/evidencias/swagger-medicao.png) |
+| `GET /clientes` paginado | ![Clientes](docs/evidencias/swagger-clientes.png) |
+| ReDoc (`/redoc`) | ![ReDoc](docs/evidencias/redoc.png) |
 
 ## Origem dos dados
 
