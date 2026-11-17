@@ -1,0 +1,129 @@
+$ alembic upgrade head
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001, cria cliente, equipamento e medicao
+INFO  [alembic.runtime.migration] Running upgrade 0001 -> 0002, carrega clientes simulados de Sao Paulo
+INFO  [alembic.runtime.migration] Running upgrade 0002 -> 0003, cria despacho e acionamento
+INFO  [alembic.runtime.migration] Running upgrade 0003 -> 0004, adiciona participa_hoje e bairro no cliente
+
+$ alembic current
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+0004 (head)
+
+$ alembic history --verbose
+Rev: 0004 (head)
+Parent: 0003
+Path: C:\dev\quorum-api\migrations\versions\0004_adiciona_participa_hoje_no_cliente.py
+
+    adiciona participa_hoje e bairro no cliente
+    
+    Revision ID: 0004
+    Revises: 0003
+    Create Date: 2026-11-12
+
+Rev: 0003
+Parent: 0002
+Path: C:\dev\quorum-api\migrations\versions\0003_cria_despacho_e_acionamento.py
+
+    cria despacho e acionamento
+    
+    Revision ID: 0003
+    Revises: 0002
+    Create Date: 2026-11-08
+
+Rev: 0002
+Parent: 0001
+Path: C:\dev\quorum-api\migrations\versions\0002_clientes_simulados.py
+
+    carrega clientes simulados de Sao Paulo
+    
+    Revision ID: 0002
+    Revises: 0001
+    Create Date: 2026-11-04
+
+Rev: 0001
+Parent: <base>
+Path: C:\dev\quorum-api\migrations\versions\0001_cria_cliente_equipamento_medicao.py
+
+    cria cliente, equipamento e medicao
+    
+    Revision ID: 0001
+    Revises:
+    Create Date: 2026-11-03
+
+
+$ alembic downgrade base
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running downgrade 0004 -> 0003, adiciona participa_hoje e bairro no cliente
+INFO  [alembic.runtime.migration] Running downgrade 0003 -> 0002, cria despacho e acionamento
+INFO  [alembic.runtime.migration] Running downgrade 0002 -> 0001, carrega clientes simulados de Sao Paulo
+INFO  [alembic.runtime.migration] Running downgrade 0001 -> , cria cliente, equipamento e medicao
+
+$ alembic current
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+
+$ alembic upgrade head
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001, cria cliente, equipamento e medicao
+INFO  [alembic.runtime.migration] Running upgrade 0001 -> 0002, carrega clientes simulados de Sao Paulo
+INFO  [alembic.runtime.migration] Running upgrade 0002 -> 0003, cria despacho e acionamento
+INFO  [alembic.runtime.migration] Running upgrade 0003 -> 0004, adiciona participa_hoje e bairro no cliente
+
+$ alembic current
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+0004 (head)
+
+$ docker exec quorum-db psql -U quorum -d quorum -c "\dt"
+             List of relations
+ Schema |      Name       | Type  | Owner  
+--------+-----------------+-------+--------
+ public | acionamento     | table | quorum
+ public | alembic_version | table | quorum
+ public | cliente         | table | quorum
+ public | despacho        | table | quorum
+ public | equipamento     | table | quorum
+ public | medicao         | table | quorum
+(6 rows)
+
+$ docker exec quorum-db psql -U quorum -d quorum -c "SELECT id, nome, segmento, bairro, demanda_contratada_kw, participa_hoje FROM cliente ORDER BY id"
+ id |               nome               |   segmento   |    bairro    | demanda_contratada_kw | participa_hoje 
+----+----------------------------------+--------------+--------------+-----------------------+----------------
+  1 | Mercado Bom Preço – Vila Mariana | SUPERMERCADO | Vila Mariana |                   300 | t
+  2 | Academia Movimento – Tatuapé     | ACADEMIA     | Tatuapé      |                   150 | t
+  3 | Clínica Vida – Lapa              | CLINICA      | Lapa         |                   120 | t
+  4 | Padaria Pão Dourado – Mooca      | PADARIA      | Mooca        |                    75 | t
+  5 | Escola Aprender – Butantã        | ESCOLA       | Butantã      |                   200 | t
+(5 rows)
+
+$ docker exec quorum-db psql -U quorum -d quorum -c "SELECT count(*) AS equipamentos FROM equipamento"
+ equipamentos 
+--------------
+           10
+(1 row)
+
+$ docker exec quorum-db psql -U quorum -d quorum -c "\d cliente"
+                                            Table "public.cliente"
+        Column         |           Type           | Collation | Nullable |               Default               
+-----------------------+--------------------------+-----------+----------+-------------------------------------
+ id                    | integer                  |           | not null | nextval('cliente_id_seq'::regclass)
+ nome                  | character varying(120)   |           | not null | 
+ segmento              | character varying(20)    |           | not null | 
+ cnpj                  | character varying(18)    |           |          | 
+ demanda_contratada_kw | double precision         |           | not null | 
+ criado_em             | timestamp with time zone |           | not null | now()
+ participa_hoje        | boolean                  |           | not null | true
+ bairro                | character varying(60)    |           |          | 
+Indexes:
+    "cliente_pkey" PRIMARY KEY, btree (id)
+    "uq_cliente_cnpj" UNIQUE CONSTRAINT, btree (cnpj)
+Check constraints:
+    "ck_cliente_demanda_positiva" CHECK (demanda_contratada_kw > 0::double precision)
+Referenced by:
+    TABLE "equipamento" CONSTRAINT "equipamento_cliente_id_fkey" FOREIGN KEY (cliente_id) REFERENCES cliente(id) ON DELETE CASCADE
+    TABLE "medicao" CONSTRAINT "medicao_cliente_id_fkey" FOREIGN KEY (cliente_id) REFERENCES cliente(id) ON DELETE CASCADE
+

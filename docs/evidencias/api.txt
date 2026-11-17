@@ -1,0 +1,182 @@
+# Sessão de testes manuais da Quorum API (dados simulados)
+
+## Saúde
+$ curl -s -X GET "http://127.0.0.1:8000/health"
+{"status":"ok","banco":"ok"}
+HTTP 200
+
+## Clientes
+$ curl -s -X GET "http://127.0.0.1:8000/clientes?pagina=1&tamanho=3"
+{"itens":[{"id":1,"nome":"Mercado Bom Preço – Vila Mariana","segmento":"SUPERMERCADO","cnpj":"00.000.000/0001-01","bairro":"Vila Mariana","demanda_contratada_kw":300.0,"participa_hoje":true},{"id":2,"nome":"Academia Movimento – Tatuapé","segmento":"ACADEMIA","cnpj":"00.000.000/0001-02","bairro":"Tatuapé","demanda_contratada_kw":150.0,"participa_hoje":true},{"id":3,"nome":"Clínica Vida – Lapa","segmento":"CLINICA","cnpj":"00.000.000/0001-03","bairro":"Lapa","demanda_contratada_kw":120.0,"participa_hoje":true}],"total":5,"pagina":1,"tamanho":3}
+HTTP 200
+
+$ curl -s -X GET "http://127.0.0.1:8000/clientes?segmento=PADARIA"
+{"itens":[{"id":4,"nome":"Padaria Pão Dourado – Mooca","segmento":"PADARIA","cnpj":"00.000.000/0001-04","bairro":"Mooca","demanda_contratada_kw":75.0,"participa_hoje":true}],"total":1,"pagina":1,"tamanho":20}
+HTTP 200
+
+$ curl -s -X POST http://127.0.0.1:8000/clientes -H "Content-Type: application/json" -d '{"nome":"Mercadinho Esquina – Pinheiros","segmento":"SUPERMERCADO","cnpj":"00.000.000/0001-06","bairro":"Pinheiros","demanda_contratada_kw":100}'
+{"id":6,"nome":"Mercadinho Esquina – Pinheiros","segmento":"SUPERMERCADO","cnpj":"00.000.000/0001-06","bairro":"Pinheiros","demanda_contratada_kw":100.0,"participa_hoje":true}
+HTTP 201
+
+$ curl -s -X POST http://127.0.0.1:8000/clientes -H "Content-Type: application/json" -d '{"nome":"Mercadinho Repetido","segmento":"SUPERMERCADO","cnpj":"00.000.000/0001-06","demanda_contratada_kw":100}'
+{"detail":"Já existe um cliente com o CNPJ 00.000.000/0001-06"}
+HTTP 409
+
+$ curl -s -X POST http://127.0.0.1:8000/clientes -H "Content-Type: application/json" -d '{"nome":"Loja Sem Contrato","segmento":"OUTRO","demanda_contratada_kw":0}'
+{"detail":"A demanda contratada deve ser maior que zero"}
+HTTP 422
+
+$ curl -s -X GET "http://127.0.0.1:8000/clientes/6"
+{"id":6,"nome":"Mercadinho Esquina – Pinheiros","segmento":"SUPERMERCADO","cnpj":"00.000.000/0001-06","bairro":"Pinheiros","demanda_contratada_kw":100.0,"participa_hoje":true}
+HTTP 200
+
+$ curl -s -X PUT http://127.0.0.1:8000/clientes/6 -H "Content-Type: application/json" -d '{"nome":"Mercadinho Esquina – Pinheiros","segmento":"SUPERMERCADO","cnpj":"00.000.000/0001-06","bairro":"Pinheiros","demanda_contratada_kw":120}'
+{"id":6,"nome":"Mercadinho Esquina – Pinheiros","segmento":"SUPERMERCADO","cnpj":"00.000.000/0001-06","bairro":"Pinheiros","demanda_contratada_kw":120.0,"participa_hoje":true}
+HTTP 200
+
+$ curl -s -X GET "http://127.0.0.1:8000/clientes/999"
+{"detail":"Cliente 999 não encontrado"}
+HTTP 404
+
+## Equipamentos
+$ curl -s -X POST http://127.0.0.1:8000/clientes/6/equipamentos -H "Content-Type: application/json" -d '{"tipo":"BATERIA","marca":"BYD","potencia_kw":50,"carga_percentual":90}'
+{"id":11,"cliente_id":6,"tipo":"BATERIA","marca":"BYD","potencia_kw":50.0,"carga_percentual":90.0,"ativo":true}
+HTTP 201
+
+$ curl -s -X POST http://127.0.0.1:8000/clientes/6/equipamentos -H "Content-Type: application/json" -d '{"tipo":"AR_CONDICIONADO","marca":"Daikin","potencia_kw":20}'
+{"id":12,"cliente_id":6,"tipo":"AR_CONDICIONADO","marca":"Daikin","potencia_kw":20.0,"carga_percentual":null,"ativo":true}
+HTTP 201
+
+$ curl -s -X POST http://127.0.0.1:8000/clientes/6/equipamentos -H "Content-Type: application/json" -d '{"tipo":"BATERIA","marca":"BYD","potencia_kw":50}'
+{"detail":"Bateria precisa informar carga_percentual"}
+HTTP 422
+
+$ curl -s -X GET "http://127.0.0.1:8000/clientes/6/equipamentos"
+[{"id":11,"cliente_id":6,"tipo":"BATERIA","marca":"BYD","potencia_kw":50.0,"carga_percentual":90.0,"ativo":true},{"id":12,"cliente_id":6,"tipo":"AR_CONDICIONADO","marca":"Daikin","potencia_kw":20.0,"carga_percentual":null,"ativo":true}]
+HTTP 200
+
+$ curl -s -X GET "http://127.0.0.1:8000/clientes/6/flexibilidade"
+{"cliente_id":6,"participa_hoje":true,"flexibilidade_kw":56.0,"disponivel_hoje_kw":56.0,"equipamentos":[{"equipamento_id":11,"tipo":"BATERIA","marca":"BYD","potencia_kw":50.0,"flexibilidade_kw":50.0},{"equipamento_id":12,"tipo":"AR_CONDICIONADO","marca":"Daikin","potencia_kw":20.0,"flexibilidade_kw":6.0}]}
+HTTP 200
+
+$ curl -s -X GET "http://127.0.0.1:8000/clientes/3/flexibilidade"
+{"cliente_id":3,"participa_hoje":true,"flexibilidade_kw":9.0,"disponivel_hoje_kw":9.0,"equipamentos":[{"equipamento_id":6,"tipo":"BATERIA","marca":"WEG","potencia_kw":60.0,"flexibilidade_kw":0.0},{"equipamento_id":7,"tipo":"AR_CONDICIONADO","marca":"LG","potencia_kw":30.0,"flexibilidade_kw":9.0}]}
+HTTP 200
+
+## Medições
+$ curl -s -X POST http://127.0.0.1:8000/clientes/6/medicoes -H "Content-Type: application/json" -d '{"momento":"2026-11-16T18:30:00-03:00","demanda_kw":131}'
+{"id":6,"cliente_id":6,"momento":"2026-11-16T18:30:00-03:00","demanda_kw":131.0,"situacao":"ULTRAPASSAGEM","excedente_kw":5.0}
+HTTP 201
+
+$ curl -s -X POST http://127.0.0.1:8000/clientes/6/medicoes -H "Content-Type: application/json" -d '{"momento":"2026-11-16T15:00:00-03:00","demanda_kw":80}'
+{"id":7,"cliente_id":6,"momento":"2026-11-16T15:00:00-03:00","demanda_kw":80.0,"situacao":"NORMAL","excedente_kw":0.0}
+HTTP 201
+
+$ curl -s -X POST http://127.0.0.1:8000/clientes/6/medicoes -H "Content-Type: application/json" -d '{"momento":"2026-11-16T18:40:00-03:00","demanda_kw":-5}'
+{"detail":"Demanda negativa indica falha do medidor, leitura descartada"}
+HTTP 422
+
+$ curl -s -X GET "http://127.0.0.1:8000/clientes/6/medicoes?de=2026-11-16T00:00:00-03:00&ate=2026-11-16T23:59:59-03:00"
+[{"id":6,"cliente_id":6,"momento":"2026-11-16T18:30:00-03:00","demanda_kw":131.0,"situacao":"ULTRAPASSAGEM","excedente_kw":5.0},{"id":7,"cliente_id":6,"momento":"2026-11-16T15:00:00-03:00","demanda_kw":80.0,"situacao":"NORMAL","excedente_kw":0.0}]
+HTTP 200
+
+$ curl -s -X GET "http://127.0.0.1:8000/clientes/6/medicoes?de=2026-11-17T00:00:00-03:00&ate=2026-11-16T00:00:00-03:00"
+{"detail":"A data 'de' deve ser anterior ou igual à data 'ate'"}
+HTTP 422
+
+$ curl -s -X GET "http://127.0.0.1:8000/medicoes/ultrapassagens?de=2026-11-01T00:00:00-03:00&ate=2026-11-30T23:59:59-03:00"
+[{"medicao_id":6,"cliente_id":6,"cliente_nome":"Mercadinho Esquina – Pinheiros","momento":"2026-11-16T18:30:00-03:00","demanda_kw":131.0,"demanda_contratada_kw":120.0,"excedente_kw":5.0},{"medicao_id":4,"cliente_id":4,"cliente_nome":"Padaria Pão Dourado – Mooca","momento":"2026-11-11T18:45:00-03:00","demanda_kw":80.0,"demanda_contratada_kw":75.0,"excedente_kw":1.25},{"medicao_id":2,"cliente_id":1,"cliente_nome":"Mercado Bom Preço – Vila Mariana","momento":"2026-11-10T18:30:00-03:00","demanda_kw":330.0,"demanda_contratada_kw":300.0,"excedente_kw":15.0}]
+HTTP 200
+
+## Botão 'hoje não' e despacho
+$ curl -s -X PATCH http://127.0.0.1:8000/clientes/1/participacao -H "Content-Type: application/json" -d '{"participa_hoje":false}'
+{"id":1,"nome":"Mercado Bom Preço – Vila Mariana","segmento":"SUPERMERCADO","cnpj":"00.000.000/0001-01","bairro":"Vila Mariana","demanda_contratada_kw":300.0,"participa_hoje":false}
+HTTP 200
+
+$ curl -s -X POST http://127.0.0.1:8000/despachos -H "Content-Type: application/json" -d '{"descricao":"Pico de fim de tarde - zona leste","potencia_solicitada_kw":150,"inicio":"2026-11-17T18:30:00-03:00","duracao_min":60}'
+{"id":1,"descricao":"Pico de fim de tarde - zona leste","potencia_solicitada_kw":150.0,"potencia_atendida_kw":150.0,"inicio":"2026-11-17T18:30:00-03:00","duracao_min":60,"status":"ATENDIDO","acionamentos":[{"equipamento_id":10,"potencia_kw":80.0},{"equipamento_id":11,"potencia_kw":50.0},{"equipamento_id":5,"potencia_kw":20.0}]}
+HTTP 201
+
+$ curl -s -X POST http://127.0.0.1:8000/despachos -H "Content-Type: application/json" -d '{"descricao":"Pico de fim de tarde - zona sul","potencia_solicitada_kw":100,"inicio":"2026-11-18T18:30:00-03:00","duracao_min":45}'
+{"id":2,"descricao":"Pico de fim de tarde - zona sul","potencia_solicitada_kw":100.0,"potencia_atendida_kw":100.0,"inicio":"2026-11-18T18:30:00-03:00","duracao_min":45,"status":"ATENDIDO","acionamentos":[{"equipamento_id":10,"potencia_kw":80.0},{"equipamento_id":11,"potencia_kw":20.0}]}
+HTTP 201
+
+$ curl -s -X POST http://127.0.0.1:8000/despachos -H "Content-Type: application/json" -d '{"potencia_solicitada_kw":100,"inicio":"2026-11-18T18:30:00-03:00","duracao_min":200}'
+{"detail":"A duração do despacho deve ficar entre 15 e 120 minutos"}
+HTTP 422
+
+$ curl -s -X GET "http://127.0.0.1:8000/despachos"
+[{"id":2,"descricao":"Pico de fim de tarde - zona sul","potencia_solicitada_kw":100.0,"potencia_atendida_kw":100.0,"inicio":"2026-11-18T18:30:00-03:00","duracao_min":45,"status":"ATENDIDO","acionamentos":[{"equipamento_id":10,"potencia_kw":80.0},{"equipamento_id":11,"potencia_kw":20.0}]},{"id":1,"descricao":"Pico de fim de tarde - zona leste","potencia_solicitada_kw":150.0,"potencia_atendida_kw":150.0,"inicio":"2026-11-17T18:30:00-03:00","duracao_min":60,"status":"ATENDIDO","acionamentos":[{"equipamento_id":10,"potencia_kw":80.0},{"equipamento_id":11,"potencia_kw":50.0},{"equipamento_id":5,"potencia_kw":20.0}]}]
+HTTP 200
+
+$ curl -s -X GET "http://127.0.0.1:8000/despachos/1"
+{"id":1,"descricao":"Pico de fim de tarde - zona leste","potencia_solicitada_kw":150.0,"potencia_atendida_kw":150.0,"inicio":"2026-11-17T18:30:00-03:00","duracao_min":60,"status":"ATENDIDO","acionamentos":[{"equipamento_id":10,"potencia_kw":80.0},{"equipamento_id":11,"potencia_kw":50.0},{"equipamento_id":5,"potencia_kw":20.0}]}
+HTTP 200
+
+$ curl -s -X GET "http://127.0.0.1:8000/despachos/999"
+{"detail":"Despacho 999 não encontrado"}
+HTTP 404
+
+## Remoções
+$ curl -s -X DELETE "http://127.0.0.1:8000/clientes/6"
+{"detail":"Cliente tem equipamentos que já participaram de despachos e não pode ser removido"}
+HTTP 409
+
+$ curl -s -X POST http://127.0.0.1:8000/clientes -H "Content-Type: application/json" -d '{"nome":"Cliente Temporário","segmento":"OUTRO","demanda_contratada_kw":50}'
+{"id":7,"nome":"Cliente Temporário","segmento":"OUTRO","cnpj":null,"bairro":null,"demanda_contratada_kw":50.0,"participa_hoje":true}
+HTTP 201
+
+$ curl -s -X POST http://127.0.0.1:8000/clientes/7/equipamentos -H "Content-Type: application/json" -d '{"tipo":"CARREGADOR_VE","marca":"ABB","potencia_kw":7}'
+{"id":13,"cliente_id":7,"tipo":"CARREGADOR_VE","marca":"ABB","potencia_kw":7.0,"carga_percentual":null,"ativo":true}
+HTTP 201
+
+$ curl -s -X POST http://127.0.0.1:8000/clientes/7/equipamentos -H "Content-Type: application/json" -d '{"tipo":"AR_CONDICIONADO","marca":"Midea","potencia_kw":12}'
+{"id":14,"cliente_id":7,"tipo":"AR_CONDICIONADO","marca":"Midea","potencia_kw":12.0,"carga_percentual":null,"ativo":true}
+HTTP 201
+
+$ curl -s -X DELETE "http://127.0.0.1:8000/equipamentos/14"
+
+HTTP 204
+
+$ curl -s -X DELETE "http://127.0.0.1:8000/equipamentos/14"
+{"detail":"Equipamento 14 não encontrado"}
+HTTP 404
+
+$ curl -s -X POST http://127.0.0.1:8000/clientes/7/medicoes -H "Content-Type: application/json" -d '{"momento":"2026-11-16T18:30:00-03:00","demanda_kw":40}'
+{"id":8,"cliente_id":7,"momento":"2026-11-16T18:30:00-03:00","demanda_kw":40.0,"situacao":"NORMAL","excedente_kw":0.0}
+HTTP 201
+
+$ curl -s -X DELETE "http://127.0.0.1:8000/clientes/7"
+
+HTTP 204
+
+$ curl -s -X GET "http://127.0.0.1:8000/clientes/7/equipamentos"
+{"detail":"Cliente 7 não encontrado"}
+HTTP 404
+
+$ curl -s -X DELETE "http://127.0.0.1:8000/clientes/7"
+{"detail":"Cliente 7 não encontrado"}
+HTTP 404
+
+$ curl -s -X PATCH http://127.0.0.1:8000/clientes/1/participacao -H "Content-Type: application/json" -d '{"participa_hoje":true}'
+{"id":1,"nome":"Mercado Bom Preço – Vila Mariana","segmento":"SUPERMERCADO","cnpj":"00.000.000/0001-01","bairro":"Vila Mariana","demanda_contratada_kw":300.0,"participa_hoje":true}
+HTTP 200
+
+## Documentação
+$ curl -s -o /dev/null -w "HTTP %{http_code}\n" http://127.0.0.1:8000/docs
+HTTP 200
+$ curl -s -o /dev/null -w "HTTP %{http_code}\n" http://127.0.0.1:8000/redoc
+HTTP 200
+
+## Saúde com o banco parado
+$ docker stop quorum-db
+quorum-db
+$ curl -s -X GET "http://127.0.0.1:8000/health"
+{"status":"erro","banco":"indisponivel"}
+HTTP 503
+
+$ docker start quorum-db
+quorum-db
+$ curl -s -X GET "http://127.0.0.1:8000/health"
+{"status":"ok","banco":"ok"}
+HTTP 200
