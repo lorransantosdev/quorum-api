@@ -1,0 +1,2 @@
+class RegraViolada(Exception):
+    pass
