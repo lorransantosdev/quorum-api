@@ -30,10 +30,10 @@ Global Solution 2026.2 · FIAP · Arquitetura Orientada a Serviços e Web Servic
 
 | Nome | RM |
 |---|---|
-| Lorran | RM ‹preencher› |
-| Pedro | RM ‹preencher› |
-| Fabiano | RM ‹preencher› |
-| Gardim | RM ‹preencher› |
+| Lorran dos Santos Sarmento | RM 558982 |
+| Pedro Augusto Martins Certo | RM 556268 |
+| Fabiano Zague | RM 555524 |
+| Vinicius Gardim | RM 556013 |
 
 > Todos os dados são **simulados**. Os comércios, CNPJs e leituras são fictícios.
 
