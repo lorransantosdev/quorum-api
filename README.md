@@ -245,6 +245,8 @@ curl -X POST http://localhost:8000/clientes/1/medicoes \
 pytest -v
 ```
 
+![Saída do pytest](docs/evidencias/testes.png)
+
 - `tests/test_dominio.py`: regras de negócio puras, sem banco e sem HTTP.
 - `tests/test_api.py`: testes de API com `TestClient`, conferindo status **e** corpo. Usam SQLite em memória (`StaticPool`) com `dependency_overrides` no `get_session`, então não precisam do Docker.
 - Opcional: para rodar a mesma suíte num PostgreSQL de teste, defina `TEST_DATABASE_URL` (ex.: `postgresql+psycopg://quorum:senha@localhost:5433/quorum_teste`). Use um banco separado, porque as tabelas são recriadas a cada teste.
@@ -267,6 +269,7 @@ Prints:
 | `POST /despachos` executado pelo Swagger (201, ATENDIDO) | ![Despacho](docs/evidencias/despacho.png) |
 | `POST /clientes/{id}/medicoes` executado pelo Swagger | ![Medição](docs/evidencias/swagger-medicao.png) |
 | `GET /clientes` paginado | ![Clientes](docs/evidencias/swagger-clientes.png) |
+| `pytest -v`: 62 testes passando | ![Testes](docs/evidencias/testes.png) |
 | ReDoc (`/redoc`) | ![ReDoc](docs/evidencias/redoc.png) |
 
 ## Origem dos dados
